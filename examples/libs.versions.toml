@@ -1,0 +1,25 @@
+[versions]
+# common
+kotlin = "1.8.0"
+kotlin_coroutine = "1.6.4"
+koin = "3.3.0"
+# test
+junit5 = "5.9.2"
+assertj = "3.23.1"
+
+[plugins]
+# common
+kotlin_jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin_kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
+
+[libraries]
+# common
+kotlin_coroutine_core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlin_coroutine" }
+kotlin_coroutine_test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlin_coroutine" }
+
+# test
+junit_engine_jupiter = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit5" }
+junit_engine_vintage = { module = "org.junit.vintage:junit-vintage-engine", version.ref = "junit5" }
+junit_api = { module = "org.junit.jupiter:"}
+
+[bundles]
