@@ -9,8 +9,6 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestDispatcher
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.TestInstance
-import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -26,9 +24,14 @@ abstract class CoroutineTestSuite {
     /**
      * Simulate virtual time for test.
      */
-    fun simulate(timeMillis: Long? = null) =
+    fun simulate(
+        timeMillis: Long? = null,
+        assertBlock: () -> Unit = { }
+    ) {
         timeMillis?.let { dispatcher.scheduler.advanceTimeBy(it) }
             ?: run { dispatcher.scheduler.advanceUntilIdle() }
+        assertBlock()
+    }
 }
 
 fun CoroutineTestSuite.testScope(additionalContext: CoroutineContext): CoroutineScope {
