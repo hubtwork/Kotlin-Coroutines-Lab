@@ -1,6 +1,7 @@
 package com.hubtwork.examples.testcases.exceptionhandler
 
 import com.hubtwork.examples.testcases.CoroutineTestSuite
+import com.hubtwork.examples.testcases.testScope
 import kotlinx.coroutines.*
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
@@ -80,6 +81,82 @@ class BaseExceptionHandlerTest: CoroutineTestSuite() {
             simulate {
                 assertThat(handledException).isInstanceOf(ArithmeticException::class.java)
                 assertThat(handledException?.suppressed?.size).isEqualTo(2)
+            }
+        }
+    }
+
+    @Nested
+    inner class WithSupervisorJob {
+        @Test
+        fun `Exception in Supervisor's child will not interrupt others`() {
+            var exceptionHandled = false
+            var executionCount = 0
+            val handler = CoroutineExceptionHandler { _, _ -> exceptionHandled = true }
+            val superScope = testScope(SupervisorJob() + handler)
+            superScope.launch(CoroutineName("child1")) {
+                delay(1000L)
+                executionCount ++
+            }
+            superScope.launch(CoroutineName("child2")) {
+                throw Exception()
+            }
+            superScope.launch(CoroutineName("child3")) {
+                delay(100000L)
+                executionCount ++
+            }
+            simulate {
+                assertThat(exceptionHandled).isTrue
+                assertThat(executionCount).isEqualTo(2)
+            }
+        }
+        @Test
+        fun `supervisorScope() must work like CoroutineScope with SupervisorJob`() {
+            var exceptionHandled = false
+            var executionCount = 0
+            val handler = CoroutineExceptionHandler { _, _ -> exceptionHandled = true }
+            testScope(handler).launch {
+                supervisorScope {
+                    launch(CoroutineName("child1")) {
+                        delay(1000L)
+                        executionCount ++
+                    }
+                    launch(CoroutineName("child2")) {
+                        throw Exception()
+                    }
+                    launch(CoroutineName("child3")) {
+                        delay(100000L)
+                        executionCount ++
+                    }
+                }
+            }
+            simulate {
+                assertThat(exceptionHandled).isTrue
+                assertThat(executionCount).isEqualTo(2)
+            }
+        }
+        @Test
+        fun `coroutineScope() must cancel parent and propagate cancellations to its child`() {
+            var exceptionHandled = false
+            var executionCount = 0
+            val handler = CoroutineExceptionHandler { _, _ -> exceptionHandled = true }
+            testScope(handler).launch {
+                coroutineScope {
+                    launch(CoroutineName("child1")) {
+                        delay(1000L)
+                        executionCount ++
+                    }
+                    launch(CoroutineName("child2")) {
+                        throw Exception()
+                    }
+                    launch(CoroutineName("child3")) {
+                        delay(100000L)
+                        executionCount ++
+                    }
+                }
+            }
+            simulate {
+                assertThat(exceptionHandled).isTrue
+                assertThat(executionCount).isZero()
             }
         }
     }
