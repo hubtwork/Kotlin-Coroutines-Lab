@@ -32,6 +32,10 @@ abstract class CoroutineTestSuite {
             ?: run { dispatcher.scheduler.advanceUntilIdle() }
         assertBlock()
     }
+    /**
+     * Get current scheduler's elapsed time millis
+     */
+    val currentTime: Long get() = dispatcher.scheduler.currentTime
 }
 
 fun CoroutineTestSuite.testScope(additionalContext: CoroutineContext): CoroutineScope {
