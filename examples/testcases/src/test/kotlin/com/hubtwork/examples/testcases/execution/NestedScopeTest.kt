@@ -13,7 +13,7 @@ class NestedScopeTest: CoroutineTestSuite() {
      * CoroutineScope's JobContext can cancel children, but it's not adapted for dispatcher
      */
     @Test
-    fun `test  `() {
+    fun `cancelChild() not properly cancel all child when work with Dispatcher`() {
         var exceptionThrown = false
         var exceptionHandled = false
         var taskProcessed = false
@@ -23,7 +23,7 @@ class NestedScopeTest: CoroutineTestSuite() {
         val scope2 = testScope(scope1.coroutineContext + SupervisorJob(scope1.coroutineContext[Job.Key]))
 
         // compare CoroutineContext
-        assertThat(scope2.coroutineContext[Job.Key]).isIn(scope1.coroutineContext[Job.Key]?.children)
+        assertThat(scope2.coroutineContext[Job.Key]).isIn(scope1.coroutineContext[Job.Key]?.children?.toList())
         assertThat(scope2.coroutineContext[CoroutineDispatcher.Key]).isEqualTo(scope1.coroutineContext[CoroutineDispatcher.Key])
 
         scope2.launch {
