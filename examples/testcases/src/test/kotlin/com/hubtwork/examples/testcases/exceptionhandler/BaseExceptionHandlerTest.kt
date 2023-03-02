@@ -28,7 +28,6 @@ class BaseExceptionHandlerTest: CoroutineTestSuite() {
                     }
                 }
             } catch (e: Throwable) {
-                println("?")
                 exceptionHandled = true
             }
         }
@@ -46,7 +45,7 @@ class BaseExceptionHandlerTest: CoroutineTestSuite() {
             scope.launch(handler) {
                 launch(CoroutineName("child 1")) {
                     delay(1000L)
-                    fail { "It must be canceled by child2's interrupt" }
+                    failInCoroutine { "child1 must be canceled." }
                 }
                 launch(CoroutineName("child 2")) {
                     delay(10L)
@@ -65,7 +64,7 @@ class BaseExceptionHandlerTest: CoroutineTestSuite() {
                 launch(CoroutineName("child 1")) {
                     try {
                         delay(1000L)
-                        fail { "It must be canceled by child2's interrupt" }
+                        failInCoroutine { "child 1 must be canceled but not finally block." }
                     } finally {
                         handledException = ArithmeticException()
                     }
@@ -87,7 +86,7 @@ class BaseExceptionHandlerTest: CoroutineTestSuite() {
                 launch(CoroutineName("child 1")) {
                     try {
                         delay(1000L)
-                        fail { "It must be canceled by child2's interrupt" }
+                        failInCoroutine { "child1 must be canceled by child2's interrupt" }
                     } finally {
                         throw IllegalArgumentException()
                     }
@@ -202,7 +201,7 @@ class BaseExceptionHandlerTest: CoroutineTestSuite() {
                     }
                 }
             } catch(e: Throwable) {
-                fail { "exception in worker must be handled by internal try-catch block" }
+                failInCoroutine { "exception in worker must be handled by internal try-catch block" }
             }
             simulate {
                 assertThat(exceptionHandled).isTrue
@@ -218,7 +217,7 @@ class BaseExceptionHandlerTest: CoroutineTestSuite() {
                     try {
                         deferred.await()
                     } catch(e: Throwable) { exceptionHandled = true }
-                } catch(e: Throwable) { fail { "it must not be handled in deferred block" } }
+                } catch(e: Throwable) { failInCoroutine { "it must not be handled in deferred block" } }
             }
             simulate {
                 assertThat(exceptionHandled).isTrue

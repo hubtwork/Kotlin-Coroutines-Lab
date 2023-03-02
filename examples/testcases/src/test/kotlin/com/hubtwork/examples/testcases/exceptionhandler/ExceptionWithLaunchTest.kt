@@ -7,7 +7,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.fail
 import java.io.IOException
 
 class ExceptionWithLaunchTest: CoroutineTestSuite() {
@@ -31,7 +30,7 @@ class ExceptionWithLaunchTest: CoroutineTestSuite() {
         @Test
         fun `Exception wrapped with try-catch in launch block can prevent hoisting`() {
             var exceptionCaught = false
-            val handler = CoroutineExceptionHandler { _, _ -> fail { "It must not be reached" } }
+            val handler = CoroutineExceptionHandler { _, _ -> failInCoroutine { "Exception must not be hoisted." } }
             testScope(handler).launch {
                 try {
                     throw IOException()
@@ -52,7 +51,7 @@ class ExceptionWithLaunchTest: CoroutineTestSuite() {
                 testScope.launch {
                     throw IOException()
                 }
-            } catch (e: Throwable) { fail { "It must not be reached" } }
+            } catch (e: Throwable) { failInCoroutine { "It must not be caught by catch block" } }
             simulate {
                 assertThat(exceptionHandled).isTrue
             }
@@ -92,7 +91,7 @@ class ExceptionWithLaunchTest: CoroutineTestSuite() {
             var exceptionHandled = false
             var launchExceptionCaught = false
             val handler = CoroutineExceptionHandler { _, _ -> exceptionHandled = true }
-            val launchHandler = CoroutineExceptionHandler { _, _ -> fail { "It must not be reached." } }
+            val launchHandler = CoroutineExceptionHandler { _, _ -> failInCoroutine { "Exception must not be hoisted." } }
             // try-catch in coroutineScope wrapping launch block.
             testScope(handler).launch {
                 coroutineScope {
@@ -101,7 +100,7 @@ class ExceptionWithLaunchTest: CoroutineTestSuite() {
                             throw Exception()
                         }
                     } catch (e: Throwable) {
-                        fail { "It must not be reached." }
+                        failInCoroutine { "It must not be caught by catch block" }
                     }
                 }
             }
@@ -149,8 +148,9 @@ class ExceptionWithLaunchTest: CoroutineTestSuite() {
         @Test
         fun `If exception throw in launch block, it will not be caught by wrapped try-catch and hoist to parent scope`() {
             var exceptionHandled = false
+            var exceptionInLaunchHandled = false
             val handler = CoroutineExceptionHandler { _, _ -> exceptionHandled = true }
-            val launchHandler = CoroutineExceptionHandler { _, _ -> fail { "It must not be reached." } }
+            val launchHandler = CoroutineExceptionHandler { _, _ -> exceptionInLaunchHandled = true }
             // try-catch in supervisorScope wrapping launch block.
             testScope(handler).launch {
                 supervisorScope {
@@ -159,7 +159,7 @@ class ExceptionWithLaunchTest: CoroutineTestSuite() {
                             throw Exception()
                         }
                     } catch (e: Throwable) {
-                        fail { "It must not be reached." }
+                        failInCoroutine { "It must not be caught by catch block" }
                     }
                 }
             }
@@ -172,11 +172,12 @@ class ExceptionWithLaunchTest: CoroutineTestSuite() {
                         }
                     }
                 } catch(e: Throwable) {
-                    fail { "It must not be reached." }
+                    failInCoroutine { "It must not be caught by catch block" }
                 }
             }
             simulate {
                 assertThat(exceptionHandled).isTrue
+                assertThat(exceptionInLaunchHandled).isTrue
             }
         }
     }
