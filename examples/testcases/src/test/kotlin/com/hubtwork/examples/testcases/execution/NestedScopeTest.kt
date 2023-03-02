@@ -56,8 +56,6 @@ class NestedScopeTest: CoroutineTestSuite() {
         val handler = CoroutineExceptionHandler { _, _ -> exceptionHandled = true }
         val scope1 = testScope(SupervisorJob() + handler)
         val scope2 = testScope(scope1.coroutineContext + SupervisorJob(scope1.coroutineContext[Job.Key]))
-        println(scope1.coroutineContext)
-        println(scope2.coroutineContext)
         // CoroutineScope Inheritance check
         // Job of scope2 is supervisor job which is reated as the child of scope1's supervisor job.
         assertThat(scope1.coroutineContext[Job.Key]).isNotEqualTo(scope2.coroutineContext[Job.Key])
