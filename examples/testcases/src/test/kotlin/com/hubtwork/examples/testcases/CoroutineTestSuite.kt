@@ -9,7 +9,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestDispatcher
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.TestInstance
 import kotlin.coroutines.CoroutineContext
@@ -37,7 +36,7 @@ abstract class CoroutineTestSuite {
             ?: run { dispatcher.scheduler.advanceUntilIdle() }
         // check if test-fail-assertion in coroutine.
         if (failuresInCoroutineContext.isNotEmpty()) {
-            fail { failuresInCoroutineContext.joinToString(", ") }
+            fail { "Exception occurred in CoroutineScope = $failuresInCoroutineContext " }
         }
         assertBlock()
     }
