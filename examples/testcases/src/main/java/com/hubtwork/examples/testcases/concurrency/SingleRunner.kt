@@ -1,4 +1,4 @@
-package com.hubtwork.examples.testcases
+package com.hubtwork.examples.testcases.concurrency
 
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -6,7 +6,10 @@ import kotlinx.coroutines.sync.withLock
 /**
  * Single Runner to help developing sequential task execution in Coroutines.
  *
- *
+ * All [enqueue] calls will be guaranteed on sequential single coroutine running.
+ * If previous running task is not completed, [enqueue] process will be queueing on current scope.
+ * Any future calls will wait for running or pending before enqueued
+ * and start after all pending blocks sequentially executed.
  */
 class SingleRunner {
     /**

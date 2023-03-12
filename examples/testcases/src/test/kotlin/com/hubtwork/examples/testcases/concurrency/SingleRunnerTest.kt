@@ -1,7 +1,6 @@
-package com.hubtwork.examples.testcases.util
+package com.hubtwork.examples.testcases.concurrency
 
 import com.hubtwork.examples.testcases.CoroutineTestSuite
-import com.hubtwork.examples.testcases.SingleRunner
 import kotlinx.coroutines.launch
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
