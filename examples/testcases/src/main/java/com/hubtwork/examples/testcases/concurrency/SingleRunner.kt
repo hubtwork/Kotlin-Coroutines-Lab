@@ -23,21 +23,21 @@ class SingleRunner {
      * If previous task is waiting or executing, mutex won't give priority to enqueued jobs.
      * So, it will guarantee order of enqueued tasks to launch just one at a time and sequentially.
      *
-     * PhoneInfo for User needs userData for Data Consistency.
-     * With singleRunner, user must be saved before phone data.
-     * So, there's no needs to check user before saving phone.
+     * Commute Service for User needs to be guaranteed on sequential-execution.
+     * With singleRunner, user's commute apiCall is guaranteed.
+     * So, there's no needs to consider API asynchronous responses for commute service.
      * ```
-     * class SaveService(
-     *      private val repository: UserRepository
+     * class UserCommuteService(
+     *      private val repository: CommuteRepository
      * ) {
      *      val runner = SingleRunner()
      *
-     *      fun saveUser(user: User) {
-     *          runner.enqueue { repository.saveUser(user) }
+     *      fun commute(user: User) {
+     *          runner.enqueue { repository.apiOnCommute(user) }
      *      }
      *
-     *      fun savePhone(userId: Int, phone: PhoneInfo) {
-     *          runner.enqueue { repository.savePhone(userId, phone) }
+     *      fun leaveOut(user: User) {
+     *          runner.enqueue { repository.apiOnLeaveOut(user) }
      *      }
      * }
      * ```
