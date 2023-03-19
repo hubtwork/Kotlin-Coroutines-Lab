@@ -1,6 +1,7 @@
 package com.hubtwork.examples.testcases.concurrency
 
 import com.hubtwork.examples.testcases.CoroutineTestSuite
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -13,7 +14,9 @@ class SingleRunnerTest: CoroutineTestSuite() {
         val runner = SingleRunner()
         scope.launch {
             runner.enqueue { state.attend() }
+            runner.enqueue { state.finishOrder() }
             runner.enqueue { state.acceptOrder() }
+            runner.enqueue { state.finishOrder() }
             runner.enqueue { state.acceptOrder() }
             runner.enqueue { state.acceptOrder() }
             runner.enqueue { state.finishOrder() }
@@ -22,8 +25,8 @@ class SingleRunnerTest: CoroutineTestSuite() {
         simulate {
             // User must be handle state-update sequentially, so accepted order is not 3, just one.
             // Single runner will ensure that just one coroutine is running at a time.
-            assertThat(state.acceptedCount).isEqualTo(1)
-            assertThat(state.finishedCount).isEqualTo(1)
+            assertThat(state.acceptedCount).isEqualTo(2)
+            assertThat(state.finishedCount).isEqualTo(2)
         }
     }
 }
@@ -39,7 +42,8 @@ class UserState {
         check(state == CommuteState.NotCommuted) { "User already commuted !" }
         state = CommuteState.Waiting
     }
-    fun acceptOrder() {
+    suspend fun acceptOrder() {
+        delay(1000L)
         try {
             check(state == CommuteState.Waiting) { "User is not available to accept order !" }
         } catch(e: IllegalStateException) {
@@ -48,7 +52,8 @@ class UserState {
         state = CommuteState.Working
         _acceptedCount ++
     }
-    fun finishOrder() {
+    suspend fun finishOrder() {
+        delay(100L)
         try {
             check(state == CommuteState.Working) { "User is not on work !" }
         } catch(e: IllegalStateException) {
